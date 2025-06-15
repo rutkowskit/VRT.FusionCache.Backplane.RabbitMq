@@ -1,0 +1,38 @@
+<Project>
+	<PropertyGroup>
+		<ParentDirectoryBuildPropsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..\'))</ParentDirectoryBuildPropsPath>
+		<PackageIcon>vrt_128.png</PackageIcon>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>		
+	</PropertyGroup>
+
+	<PropertyGroup Label="NuGet">
+		<NoWarn>$(NoWarn);NU5128;CA1724</NoWarn>		
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+	</PropertyGroup>
+
+	<ImportGroup>
+		<Import Project="$(ParentDirectoryBuildPropsPath)" 
+				Condition="$(ParentDirectoryBuildPropsPath) != ''"/>
+	</ImportGroup>
+	
+	<ItemGroup>		
+		<None Include="..\..\assets\logo\vrt_128.png" Pack="true" PackagePath="" />
+		<None Include="Readme.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+	</ItemGroup>
+	<PropertyGroup Label="Versioning">
+		<MinVerTagPrefix>v</MinVerTagPrefix>
+		<MinVerDefaultPreReleaseIdentifiers>beta</MinVerDefaultPreReleaseIdentifiers>
+		<MinVerMinimumMajorMinor>8.0</MinVerMinimumMajorMinor>
+	</PropertyGroup>
+
+	<ItemGroup Label="Versioning">
+		<PackageReference Include="MinVer">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

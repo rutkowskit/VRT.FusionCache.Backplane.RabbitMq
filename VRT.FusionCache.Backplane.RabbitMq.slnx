@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE.txt" />
+    <File Path="Readme.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/VRT.FusionCache.Backplane.RabbitMq/VRT.FusionCache.Backplane.RabbitMq.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>

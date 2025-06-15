@@ -1,0 +1,2 @@
+# VRT.FusionCache.Backplane.RabbitMq 
+
