@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using VRT.FusionCache.Backplane.RabbitMq.BusService;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace VRT.FusionCache.Backplane.RabbitMq;
@@ -18,6 +18,7 @@ public static class DependencyInjection
         {
             services.Configure(setupOptionsAction);
         }
+        services.AddRabbitMqBusService();
         services.TryAddTransient<RabbitMqBackplane>();
         services.TryAddTransient<IFusionCacheBackplane, RabbitMqBackplane>();
         return services;
@@ -36,20 +37,40 @@ public static class DependencyInjection
         return builder
             .WithBackplane(sp =>
             {
-                var options = sp.GetService<IOptionsMonitor<RabbitMqBackplaneOptions>>()?.Get(builder.CacheName);
-
-                if (options is null)
-                {
-                    throw new InvalidOperationException($"Unable to find a valid {nameof(RabbitMqBackplaneOptions)} instance for the current cache name '{builder.CacheName}'.");
-                }
-
+                var options = sp.GetService<IOptionsMonitor<RabbitMqBackplaneOptions>>()?.Get(builder.CacheName)
+                    ?? throw new InvalidOperationException($"Unable to find a valid {nameof(RabbitMqBackplaneOptions)} instance for the current cache name '{builder.CacheName}'.");
 
                 setupOptionsAction?.Invoke(options);
 
                 var logger = sp.GetService<ILogger<RabbitMqBackplane>>();
+                var busService = sp.GetRequiredService<IBusService>();
 
-                return new RabbitMqBackplane(options, logger);
-            })
-        ;
+                return new RabbitMqBackplane(options, busService, logger);
+            });
+    }
+
+    private static IServiceCollection AddRabbitMqBusService(this IServiceCollection services, Action<RabbitMqBackplaneOptions.RabbitMqOptions>? setupOptionsAction = null)
+    {
+        services.TryAddSingleton(CreateConnectionFactory);
+        services.AddSingleton<IBusService, RabbitMqBackplaneMessageBusService>();
+        services.AddSingleton<IBusSubscriberService>(p => p.GetRequiredService<IBusService>());
+        services.AddSingleton<IBusPublisherService>(p => p.GetRequiredService<IBusService>());
+        services.AddSingleton<IBusEventSubscriberService>(p => p.GetRequiredService<IBusService>());
+        return services;
+    }
+
+    private static ConnectionFactory CreateConnectionFactory(IServiceProvider provider)
+    {
+        var options = provider.GetRequiredService<IOptions<RabbitMqBackplaneOptions>>().Value.RabbitMq
+            ?? new();
+
+        return new ConnectionFactory()
+        {
+            HostName = options.HostName,
+            UserName = options.UserName,
+            Password = options.Password,
+            AutomaticRecoveryEnabled = options.AutomaticRecoveryEnabled,
+            TopologyRecoveryEnabled = true
+        };
     }
 }

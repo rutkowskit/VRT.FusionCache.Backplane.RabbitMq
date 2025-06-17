@@ -11,5 +11,7 @@
     <File Path="src/Directory.Build.props" />
     <Project Path="src/VRT.FusionCache.Backplane.RabbitMq/VRT.FusionCache.Backplane.RabbitMq.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="VRT.FusionCache.Backplane.RabbitMq.Tests.Integration/VRT.FusionCache.Backplane.RabbitMq.Tests.Integration.csproj" Id="511eec52-f54b-49b9-917c-2226e46fbb98" />
+  </Folder>
 </Solution>

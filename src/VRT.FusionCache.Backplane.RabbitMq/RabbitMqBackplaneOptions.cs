@@ -10,7 +10,7 @@ public sealed class RabbitMqBackplaneOptions : IOptions<RabbitMqBackplaneOptions
     /// <summary>
     /// RabbitMQ fanout exchange name.
     /// </summary>
-    public string ExchangeName { get; set; } = "FusionCacheExchange";
+    public string ExchangeName { get; set; } = "vrt.fusioncache.events";
 
     /// <summary>
     /// The configuration used to connect to RabbitMq.
