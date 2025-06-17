@@ -10,15 +10,18 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
         PropertyNameCaseInsensitive = true
     };
     private readonly IMessageHandler<T> _handler;
+    private readonly RabbitMqInstance _instance;
     private AsyncEventingBasicConsumer? _consumer;
     private Action<IDisposable> _onDispose = (_) => { };
 
     protected BaseRabbitMqSubscriber(
         ConnectionFactory factory,
-        IMessageHandler<T> handler) : base(factory)
+        IMessageHandler<T> handler,
+        RabbitMqInstance instance) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(handler);
         _handler = handler;
+        _instance = instance;
     }
     public string MessageTypeName { get; private set; } = typeof(T).FullName!;
     protected ILogger? Logger { get; private set; }
@@ -82,40 +85,64 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     }
     protected virtual async Task OnMessageReceived(object sender, BasicDeliverEventArgs e)
     {
+        if (IsMessageFromSelf(e.BasicProperties))
+        {
+            Logger?.LogTrace("[RabbitMq] [BP] Message is from self. Ignoring message. {@MessageTypeName}", MessageTypeName);
+            return;
+        }
+
         var channel = await GetChannel(e.CancellationToken);
         if (channel is null || channel.IsOpen is false)
         {
             Logger?.LogWarning("Channel is not open. Cannot process message. {@MessageTypeName}", MessageTypeName);
             return;
         }
+
+        var isSuccess = false;
+        var bodyJson = Encoding.UTF8.GetString(e.Body.ToArray()) ?? "";
+
         try
         {
-            var message = DeserializeBody(e.Body.ToArray());
-            await HandleMessage(message!, e.CancellationToken);
+            var message = JsonSerializer.Deserialize<T>(bodyJson, JsonDeserializeOptions);
+            if (message is null)
+            {
+                Logger?.LogWarning("Received null message of type {MessageTypeName}", MessageTypeName);
+                return;
+            }
+
+            await _handler.HandleMessageAsync(message!, e.CancellationToken);
+            Logger?.LogInformation("Message handled successfully. {MessageTypeName}", message.GetType().FullName);
+            isSuccess = true;
+            await channel.BasicAckAsync(e.DeliveryTag, false, e.CancellationToken);
+        }
+        catch (JsonException jsonEx)
+        {
+            Logger?.LogError(jsonEx, "JSON deserialization failed for message of type {MessageTypeName}. {@Message} {Error}",
+                typeof(T).FullName, bodyJson, jsonEx.Message);
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "OnMessageReceived failed. {@MessageTypeName} {Error}", MessageTypeName, ex.Message);
+            Logger?.LogError(ex, "Unexpected exception. {@Message} {Error}", bodyJson, ex.Message);
+        }
+        if (isSuccess is false)
+        {
             await channel.BasicRejectAsync(e.DeliveryTag, false, e.CancellationToken);
         }
     }
 
-    private async Task HandleMessage(T message, CancellationToken cancellationToken)
+    private bool IsMessageFromSelf(IReadOnlyBasicProperties? properties)
     {
-        if (message is null)
-        {
-            Logger?.LogWarning("Received null message of type {MessageTypeName}", MessageTypeName);
-            return;
-        }
-        try
-        {
-            await _handler.HandleMessageAsync(message!, cancellationToken);
-            Logger?.LogInformation("Message handled successfully. {@MessageTypeName}", message.GetType().FullName);
-        }
-        catch (Exception ex)
-        {
-            Logger?.LogError(ex, "HandleMessage failed. {@Message} {Error}", message, ex.Message);
-        }
+        object? headerValue = null;
+        var hasHeader = properties?.Headers?.TryGetValue(RabbitMqConstants.RabbitMqInstanceIdHeaderName, out headerValue) ?? false;
+
+        //return hasHeader && headerValue switch
+        //{
+        //    null => false,
+        //    string value => value.Equals(_instance.Id, StringComparison.OrdinalIgnoreCase),
+        //    byte[] value when value.Length > 0 => Encoding.UTF8.GetString(value).Equals(_instance.Id, StringComparison.OrdinalIgnoreCase),
+        //    _ => false
+        //};
+        return false;
     }
 
     protected override async ValueTask DisposeAsyncCore()
@@ -135,20 +162,6 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     protected sealed class ChannelContext(IChannel channel)
     {
         public IChannel Channel { get; } = channel;
-    }
-
-    private T? DeserializeBody(byte[] body)
-    {
-        try
-        {
-            var jsonString = Encoding.UTF8.GetString(body) ?? "";
-            return JsonSerializer.Deserialize<T>(jsonString, JsonDeserializeOptions);
-        }
-        catch (Exception ex)
-        {
-            Logger?.LogError(ex, "Failed to deserialize raw message body.");
-            return default;
-        }
     }
 
     protected static Task DelayNoThrow(int millisecondsDelay, CancellationToken cancellationToken)

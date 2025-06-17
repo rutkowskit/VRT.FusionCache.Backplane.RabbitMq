@@ -15,7 +15,7 @@ public sealed class RabbitMqBackplaneOptions : IOptions<RabbitMqBackplaneOptions
     /// <summary>
     /// The configuration used to connect to RabbitMq.
     /// </summary>
-    public RabbitMqOptions? RabbitMq { get; set; }
+    public RabbitMqOptions RabbitMq { get; set; } = new();
 
     RabbitMqBackplaneOptions IOptions<RabbitMqBackplaneOptions>.Value => this;
 

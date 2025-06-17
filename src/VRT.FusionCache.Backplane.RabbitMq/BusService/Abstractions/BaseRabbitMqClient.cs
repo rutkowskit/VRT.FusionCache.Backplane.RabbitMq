@@ -43,7 +43,6 @@ internal abstract class BaseRabbitMqClient(ConnectionFactory factory) : IDisposa
             : Connect(cancellationToken);
     }
 
-
     private async Task<IChannel> Connect(CancellationToken cancellationToken)
     {
         await Disconnect();

@@ -1,6 +1,9 @@
 ﻿namespace VRT.FusionCache.Backplane.RabbitMq.BusService;
-internal sealed class RabbitMqEventSubscriber<T>(ConnectionFactory factory, IMessageHandler<T> handler)
-    : BaseRabbitMqSubscriber<T>(factory, handler)
+internal sealed class RabbitMqEventSubscriber<T>(
+    ConnectionFactory factory,
+    IMessageHandler<T> handler,
+    RabbitMqInstance instance)
+    : BaseRabbitMqSubscriber<T>(factory, handler, instance)
 {
     protected override async Task<ConnectedChannelContext> ConnectToQueue(ChannelContext channel,
         CancellationToken cancellationToken)

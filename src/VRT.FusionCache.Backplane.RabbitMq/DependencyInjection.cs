@@ -18,6 +18,7 @@ public static class DependencyInjection
         {
             services.Configure(setupOptionsAction);
         }
+        services.AddSingleton<RabbitMqInstance>();
         services.AddRabbitMqBusService();
         services.TryAddTransient<RabbitMqBackplane>();
         services.TryAddTransient<IFusionCacheBackplane, RabbitMqBackplane>();

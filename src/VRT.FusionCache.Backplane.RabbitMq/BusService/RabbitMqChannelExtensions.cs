@@ -4,39 +4,44 @@ using System.Text.Json;
 namespace VRT.FusionCache.Backplane.RabbitMq.BusService;
 internal static class RabbitMqChannelExtensions
 {
-    private static readonly BasicProperties EventBasicProperties = new()
-    {
-        DeliveryMode = DeliveryModes.Transient,
-        Persistent = false
-    };
-
     public sealed record QueueExchangeBinding(IChannel Channel, string QueueName, string ExchangeName);
 
     public static Task PublishEvent<T>(this QueueExchangeBinding binding,
         T message,
+        RabbitMqInstance instance,
         CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(message);
-        return binding.PublishEvent(json, cancellationToken);
+        return binding.PublishEvent(json, instance, cancellationToken);
     }
 
     public static async Task PublishEvent(this QueueExchangeBinding binding,
         string message,
+        RabbitMqInstance instance,
         CancellationToken cancellationToken = default)
     {
-
         var body = CreateMessageBody(message);
         var exchangeName = await binding.Channel.DeclareEventsExchange(binding.ExchangeName, cancellationToken);
+        var basicProperties = new BasicProperties
+        {
+            DeliveryMode = DeliveryModes.Transient,
+            Persistent = false,
+            AppId = RabbitMqConstants.AppId,
+            Type = typeof(BackplaneMessage).FullName ?? "UnknownType",
+            Headers = new Dictionary<string, object?>
+            {
+                { RabbitMqConstants.RabbitMqInstanceIdHeaderName, instance.Id }
+            }
+        };
 
         await binding.Channel.BasicPublishAsync(
-            binding.ExchangeName, "", false,
-            basicProperties: EventBasicProperties, body: body,
+            exchangeName, "", false,
+            basicProperties: basicProperties, body: body,
             cancellationToken: cancellationToken).AsTask();
     }
 
     public static async Task<QueueExchangeBinding> ConnectToEvents(this IChannel channel,
         string typeName,
-
         CancellationToken cancellationToken = default)
     {
         var declaredExchangeName = await channel

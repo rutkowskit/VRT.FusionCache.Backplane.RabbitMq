@@ -6,16 +6,19 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
 {
     private readonly ConcurrentDictionary<IDisposable, BaseRabbitMqClient> _subscribers;
     private readonly ILogger<RabbitMqBackplaneMessageBusService> _logger;
+    private readonly RabbitMqInstance _instance;
     private readonly RabbitMqBackplaneOptions _options;
 
     public RabbitMqBackplaneMessageBusService(
         ConnectionFactory connectionFactory,
         ILogger<RabbitMqBackplaneMessageBusService> logger,
-        IOptions<RabbitMqBackplaneOptions> options)
+        IOptions<RabbitMqBackplaneOptions> options,
+        RabbitMqInstance instance)
         : base(connectionFactory)
     {
         _subscribers = [];
         _logger = logger;
+        _instance = instance;
         _options = options.Value;
     }
     protected override void Dispose(bool disposing)
@@ -35,7 +38,7 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
             var channel = await GetChannel(cancellationToken);
             var json = JsonSerializer.Serialize(message);
             var binding = await channel.ConnectToEvents(_options.ExchangeName, cancellationToken);
-            await binding.PublishEvent(json, cancellationToken);
+            await binding.PublishEvent(json, _instance, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -50,7 +53,7 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
     {
         try
         {
-            var subscriber = new RabbitMqEventSubscriber<BackplaneMessage>(Factory, handler);
+            var subscriber = new RabbitMqEventSubscriber<BackplaneMessage>(Factory, handler, _instance);
             subscriber.WithMessageTypeName(_options.ExchangeName);
             subscriber.WithLogger(_logger);
             subscriber.SetOnDispose(RemoveDisposedSubscriber);
