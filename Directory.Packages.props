@@ -4,6 +4,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="1.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />

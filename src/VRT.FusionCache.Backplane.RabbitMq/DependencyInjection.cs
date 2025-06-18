@@ -9,7 +9,8 @@ using ZiggyCreatures.Caching.Fusion;
 namespace VRT.FusionCache.Backplane.RabbitMq;
 public static class DependencyInjection
 {
-    public static IServiceCollection AddRabbitMqBackplane(this IServiceCollection services, Action<RabbitMqBackplaneOptions>? setupOptionsAction = null)
+    public static IServiceCollection AddRabbitMqBackplane(this IServiceCollection services,
+        Action<RabbitMqBackplaneOptions>? setupOptionsAction = null)
     {
         ArgumentNullException.ThrowIfNull(services, nameof(services));
         services.AddOptions();
@@ -62,7 +63,7 @@ public static class DependencyInjection
 
     private static ConnectionFactory CreateConnectionFactory(IServiceProvider provider)
     {
-        var options = provider.GetRequiredService<IOptions<RabbitMqBackplaneOptions>>().Value.RabbitMq
+        var options = provider.GetService<IOptions<RabbitMqBackplaneOptions>>()?.Value.RabbitMq
             ?? new();
 
         return new ConnectionFactory()
@@ -70,6 +71,7 @@ public static class DependencyInjection
             HostName = options.HostName,
             UserName = options.UserName,
             Password = options.Password,
+            Port = options.Port,
             AutomaticRecoveryEnabled = options.AutomaticRecoveryEnabled,
             TopologyRecoveryEnabled = true
         };

@@ -25,6 +25,12 @@ public sealed class RabbitMqBackplaneOptions : IOptions<RabbitMqBackplaneOptions
         /// RabbitMQ host name or IP address.
         /// </summary>
         public string HostName { get; set; } = "localhost";
+
+        /// <summary>
+        /// RabbitMQ port number.
+        /// </summary>
+        public int Port { get; set; } = 5672;
+
         /// <summary>
         /// RabbitMQ user name.
         /// </summary>

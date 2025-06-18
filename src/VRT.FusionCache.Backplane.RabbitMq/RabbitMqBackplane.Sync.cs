@@ -27,6 +27,6 @@ partial class RabbitMqBackplane
     /// <inheritdoc/>
     public void Publish(BackplaneMessage message, FusionCacheEntryOptions options, CancellationToken token = default)
     {
-        _ = Task.Run(() => _ = PublishAsync(message, options, token), token);
+        _ = Task.Run(async () => await PublishAsync(message, options, token), token);
     }
 }

@@ -85,12 +85,6 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     }
     protected virtual async Task OnMessageReceived(object sender, BasicDeliverEventArgs e)
     {
-        if (IsMessageFromSelf(e.BasicProperties))
-        {
-            Logger?.LogTrace("[RabbitMq] [BP] Message is from self. Ignoring message. {@MessageTypeName}", MessageTypeName);
-            return;
-        }
-
         var channel = await GetChannel(e.CancellationToken);
         if (channel is null || channel.IsOpen is false)
         {
@@ -128,21 +122,6 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
         {
             await channel.BasicRejectAsync(e.DeliveryTag, false, e.CancellationToken);
         }
-    }
-
-    private bool IsMessageFromSelf(IReadOnlyBasicProperties? properties)
-    {
-        object? headerValue = null;
-        var hasHeader = properties?.Headers?.TryGetValue(RabbitMqConstants.RabbitMqInstanceIdHeaderName, out headerValue) ?? false;
-
-        //return hasHeader && headerValue switch
-        //{
-        //    null => false,
-        //    string value => value.Equals(_instance.Id, StringComparison.OrdinalIgnoreCase),
-        //    byte[] value when value.Length > 0 => Encoding.UTF8.GetString(value).Equals(_instance.Id, StringComparison.OrdinalIgnoreCase),
-        //    _ => false
-        //};
-        return false;
     }
 
     protected override async ValueTask DisposeAsyncCore()

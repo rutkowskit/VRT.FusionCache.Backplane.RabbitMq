@@ -45,12 +45,12 @@ internal abstract class BaseRabbitMqClient(ConnectionFactory factory) : IDisposa
 
     private async Task<IChannel> Connect(CancellationToken cancellationToken)
     {
-        await Disconnect();
+        await Disconnect().ConfigureAwait(false);
         await _connectionLock.LockedAsync(async () =>
         {
-            Connection = await CreateConnection(cancellationToken);
-            Channel = await Connection.CreateChannelAsync(cancellationToken: cancellationToken);
-        }, cancellationToken: cancellationToken);
+            Connection = await CreateConnection(cancellationToken).ConfigureAwait(false);
+            Channel = await Connection.CreateChannelAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
         return Channel!;
     }
 

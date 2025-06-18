@@ -1,21 +1,9 @@
 ﻿//[assembly: TestPipelineStartup(typeof(TestsStartup))]
 
+using Microsoft.Extensions.Configuration;
+
 namespace VRT.FusionCache.Backplane.RabbitMq.Tests.Integration;
 
-
-
-//internal class TestsStartup : ITestPipelineStartup
-//{    
-//    public ValueTask StartAsync(IMessageSink diagnosticMessageSink)
-//    {
-//        throw new NotImplementedException();
-//    }
-
-//    public ValueTask StopAsync()
-//    {
-//        throw new NotImplementedException();
-//    }
-//}
 
 internal static class TestsShared
 {
@@ -24,7 +12,19 @@ internal static class TestsShared
     public static IServiceProvider CreateTestServiceProvider()
     {
         var result = new ServiceCollection();
-        result.AddDistributedMemoryCache();
+        result
+            .AddConfiguration()
+            .AddDistributedMemoryCache();
         return result.BuildServiceProvider();
+    }
+
+    private static IServiceCollection AddConfiguration(this IServiceCollection services)
+    {
+        var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .Build();
+        services.AddSingleton<IConfiguration>(configuration);
+
+        return services;
     }
 }

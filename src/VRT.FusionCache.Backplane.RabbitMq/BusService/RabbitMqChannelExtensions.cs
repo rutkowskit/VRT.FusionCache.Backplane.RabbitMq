@@ -21,7 +21,9 @@ internal static class RabbitMqChannelExtensions
         CancellationToken cancellationToken = default)
     {
         var body = CreateMessageBody(message);
-        var exchangeName = await binding.Channel.DeclareEventsExchange(binding.ExchangeName, cancellationToken);
+        var exchangeName = await binding.Channel
+            .DeclareEventsExchange(binding.ExchangeName, cancellationToken)
+            .ConfigureAwait(false);
         var basicProperties = new BasicProperties
         {
             DeliveryMode = DeliveryModes.Transient,
@@ -33,11 +35,10 @@ internal static class RabbitMqChannelExtensions
                 { RabbitMqConstants.RabbitMqInstanceIdHeaderName, instance.Id }
             }
         };
-
         await binding.Channel.BasicPublishAsync(
             exchangeName, "", false,
             basicProperties: basicProperties, body: body,
-            cancellationToken: cancellationToken).AsTask();
+            cancellationToken: cancellationToken).AsTask().ConfigureAwait(false);
     }
 
     public static async Task<QueueExchangeBinding> ConnectToEvents(this IChannel channel,

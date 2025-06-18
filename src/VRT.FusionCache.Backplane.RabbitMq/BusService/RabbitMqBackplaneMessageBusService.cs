@@ -35,10 +35,13 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
     {
         try
         {
-            var channel = await GetChannel(cancellationToken);
+            var channel = await GetChannel(cancellationToken)
+                .ConfigureAwait(false);
             var json = JsonSerializer.Serialize(message);
-            var binding = await channel.ConnectToEvents(_options.ExchangeName, cancellationToken);
-            await binding.PublishEvent(json, _instance, cancellationToken);
+            var binding = await channel.ConnectToEvents(_options.ExchangeName, cancellationToken)
+                .ConfigureAwait(false);
+            await binding.PublishEvent(json, _instance, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -58,7 +61,7 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
             subscriber.WithLogger(_logger);
             subscriber.SetOnDispose(RemoveDisposedSubscriber);
             _subscribers.TryAdd(subscriber, subscriber);
-            await subscriber.Subscribe(cancellationToken);
+            await subscriber.Subscribe(cancellationToken).ConfigureAwait(false);
             return new Disposable(() => RemoveDisposedSubscriber(subscriber));
         }
         catch (Exception ex)
