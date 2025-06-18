@@ -17,5 +17,6 @@
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<NoWarn>1591;1701;1702</NoWarn>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<Description>RabbitMQ backplane for FusionCache</Description>
 	</PropertyGroup>	
 </Project>

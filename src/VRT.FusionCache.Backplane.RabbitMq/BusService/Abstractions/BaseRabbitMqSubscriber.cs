@@ -10,18 +10,15 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
         PropertyNameCaseInsensitive = true
     };
     private readonly IMessageHandler<T> _handler;
-    private readonly RabbitMqInstance _instance;
     private AsyncEventingBasicConsumer? _consumer;
     private Action<IDisposable> _onDispose = (_) => { };
 
     protected BaseRabbitMqSubscriber(
         ConnectionFactory factory,
-        IMessageHandler<T> handler,
-        RabbitMqInstance instance) : base(factory)
+        IMessageHandler<T> handler) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(handler);
         _handler = handler;
-        _instance = instance;
     }
     public string MessageTypeName { get; private set; } = typeof(T).FullName!;
     protected ILogger? Logger { get; private set; }
@@ -141,11 +138,5 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     protected sealed class ChannelContext(IChannel channel)
     {
         public IChannel Channel { get; } = channel;
-    }
-
-    protected static Task DelayNoThrow(int millisecondsDelay, CancellationToken cancellationToken)
-    {
-        return Task.Delay(millisecondsDelay, cancellationToken)
-            .ContinueWith(_ => { }, cancellationToken);
     }
 }

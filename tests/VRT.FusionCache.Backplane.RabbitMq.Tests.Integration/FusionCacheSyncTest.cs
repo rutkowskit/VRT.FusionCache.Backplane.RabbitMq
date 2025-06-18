@@ -75,6 +75,15 @@ public sealed class FusionCacheSyncTest(ITestOutputHelper testOutputHelper)
         var configuration = TestsShared.Services.GetRequiredService<IConfiguration>();
 
         result
+            .AddRabbitMqBackplane(options =>
+            {
+                options.ExchangeName = "FusionCacheBackplane.events";
+                options.RabbitMq.HostName = "localhost";
+                options.RabbitMq.UserName = "admin";
+                options.RabbitMq.Password = "some_secret_password";
+            });
+
+        result
             .AddRabbitMqBackplane(configuration.GetSection("RabbitMqBackplane").Bind)
             .AddSingleton(TestsShared.Services.GetRequiredService<IDistributedCache>());
 

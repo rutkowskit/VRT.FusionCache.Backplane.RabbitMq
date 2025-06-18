@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="RabbitMQ.Client" />
-    <PackageReference Include="ZiggyCreatures.FusionCache" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="RabbitMQ.Client" />
+		<PackageReference Include="ZiggyCreatures.FusionCache" />		
+	</ItemGroup>
+	<PropertyGroup Label="Nuget">
+		<PackageTags>fusioncache;vrt;rabbitmq;backplane</PackageTags>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 </Project>

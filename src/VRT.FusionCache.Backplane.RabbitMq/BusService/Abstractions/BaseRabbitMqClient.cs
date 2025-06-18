@@ -4,7 +4,7 @@ namespace VRT.FusionCache.Backplane.RabbitMq.BusService.Abstractions;
 internal abstract class BaseRabbitMqClient(ConnectionFactory factory) : IDisposable, IAsyncDisposable
 {
     private bool _disposedValue;
-    private SemaphoreSlim _connectionLock = new(initialCount: 1, maxCount: 1);
+    private readonly SemaphoreSlim _connectionLock = new(initialCount: 1, maxCount: 1);
 
     protected IChannel? Channel { get; private set; }
     protected IConnection? Connection { get; private set; }

@@ -8,16 +8,14 @@ internal static class RabbitMqChannelExtensions
 
     public static Task PublishEvent<T>(this QueueExchangeBinding binding,
         T message,
-        RabbitMqInstance instance,
         CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(message);
-        return binding.PublishEvent(json, instance, cancellationToken);
+        return binding.PublishEvent(json, cancellationToken);
     }
 
     public static async Task PublishEvent(this QueueExchangeBinding binding,
         string message,
-        RabbitMqInstance instance,
         CancellationToken cancellationToken = default)
     {
         var body = CreateMessageBody(message);
@@ -29,11 +27,7 @@ internal static class RabbitMqChannelExtensions
             DeliveryMode = DeliveryModes.Transient,
             Persistent = false,
             AppId = RabbitMqConstants.AppId,
-            Type = typeof(BackplaneMessage).FullName ?? "UnknownType",
-            Headers = new Dictionary<string, object?>
-            {
-                { RabbitMqConstants.RabbitMqInstanceIdHeaderName, instance.Id }
-            }
+            Type = typeof(BackplaneMessage).FullName ?? "UnknownType"
         };
         await binding.Channel.BasicPublishAsync(
             exchangeName, "", false,

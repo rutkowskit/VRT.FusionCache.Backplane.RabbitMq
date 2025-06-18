@@ -9,6 +9,12 @@ using ZiggyCreatures.Caching.Fusion;
 namespace VRT.FusionCache.Backplane.RabbitMq;
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds a RabbitMq backplane to the service collection
+    /// </summary>
+    /// <param name="services">service collection</param>
+    /// <param name="setupOptionsAction">Setup options action</param>
+    /// <returns>Service collection</returns>
     public static IServiceCollection AddRabbitMqBackplane(this IServiceCollection services,
         Action<RabbitMqBackplaneOptions>? setupOptionsAction = null)
     {
@@ -19,7 +25,6 @@ public static class DependencyInjection
         {
             services.Configure(setupOptionsAction);
         }
-        services.AddSingleton<RabbitMqInstance>();
         services.AddRabbitMqBusService();
         services.TryAddTransient<RabbitMqBackplane>();
         services.TryAddTransient<IFusionCacheBackplane, RabbitMqBackplane>();
