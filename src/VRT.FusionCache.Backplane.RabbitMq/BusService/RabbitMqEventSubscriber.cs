@@ -8,7 +8,7 @@ internal sealed class RabbitMqEventSubscriber<T>(
         CancellationToken cancellationToken)
     {
         var binding = await channel.Channel
-            .ConnectToEvents(MessageTypeName, cancellationToken)
+            .ConnectToEvents(MessageTypeName, ChannelName ?? "#", cancellationToken)
             .ConfigureAwait(false);
 
         return new ConnectedChannelContext(channel)

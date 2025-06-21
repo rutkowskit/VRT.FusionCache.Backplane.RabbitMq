@@ -22,6 +22,7 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     }
     public string MessageTypeName { get; private set; } = typeof(T).FullName!;
     protected ILogger? Logger { get; private set; }
+    protected string? ChannelName { get; private set; }
     public void WithMessageTypeName(string? messageTypeName)
     {
         if (string.IsNullOrWhiteSpace(messageTypeName))
@@ -29,6 +30,14 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
             return;
         }
         MessageTypeName = messageTypeName;
+    }
+    public void WithChannelName(string? channelName)
+    {
+        if (string.IsNullOrWhiteSpace(channelName))
+        {
+            return;
+        }
+        ChannelName = channelName;
     }
     public void WithLogger(ILogger logger) => Logger = logger;
 

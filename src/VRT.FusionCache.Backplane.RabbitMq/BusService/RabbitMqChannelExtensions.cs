@@ -1,27 +1,18 @@
 ﻿using System.Text;
-using System.Text.Json;
 
 namespace VRT.FusionCache.Backplane.RabbitMq.BusService;
 internal static class RabbitMqChannelExtensions
 {
-    public sealed record QueueExchangeBinding(IChannel Channel, string QueueName, string ExchangeName);
+    internal record ExchangeBinding(IChannel Channel, string ExchangeName);
+    internal record QueueExchangeBinding(IChannel Channel, string QueueName, string ExchangeName)
+        : ExchangeBinding(Channel, ExchangeName);
 
-    public static Task PublishEvent<T>(this QueueExchangeBinding binding,
-        T message,
-        CancellationToken cancellationToken = default)
-    {
-        var json = JsonSerializer.Serialize(message);
-        return binding.PublishEvent(json, cancellationToken);
-    }
-
-    public static async Task PublishEvent(this QueueExchangeBinding binding,
+    public static async Task PublishEvent(this ExchangeBinding binding,
         string message,
+        string? routingKey = null,
         CancellationToken cancellationToken = default)
     {
         var body = CreateMessageBody(message);
-        var exchangeName = await binding.Channel
-            .DeclareEventsExchange(binding.ExchangeName, cancellationToken)
-            .ConfigureAwait(false);
         var basicProperties = new BasicProperties
         {
             DeliveryMode = DeliveryModes.Transient,
@@ -30,16 +21,17 @@ internal static class RabbitMqChannelExtensions
             Type = typeof(BackplaneMessage).FullName ?? "UnknownType"
         };
         await binding.Channel.BasicPublishAsync(
-            exchangeName, "", false,
+            binding.ExchangeName, routingKey ?? "", false,
             basicProperties: basicProperties, body: body,
             cancellationToken: cancellationToken).AsTask().ConfigureAwait(false);
     }
 
     public static async Task<QueueExchangeBinding> ConnectToEvents(this IChannel channel,
         string typeName,
+        string topic,
         CancellationToken cancellationToken = default)
     {
-        var declaredExchangeName = await channel
+        var exchange = await channel
             .DeclareEventsExchange(typeName, cancellationToken)
             .ConfigureAwait(false);
 
@@ -50,21 +42,21 @@ internal static class RabbitMqChannelExtensions
         // Unique queue name created by RabbitMQ
         var declaredQueueName = declaredQueue.QueueName;
         await channel
-            .QueueBindAsync(declaredQueueName, declaredExchangeName,
-            "", null, cancellationToken: cancellationToken)
+            .QueueBindAsync(declaredQueueName, exchange.ExchangeName,
+            topic, null, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
-        return new QueueExchangeBinding(channel, declaredQueueName, declaredExchangeName);
+        return new QueueExchangeBinding(channel, declaredQueueName, exchange.ExchangeName);
     }
 
-    internal static async Task<string> DeclareEventsExchange(this IChannel channel,
+    internal static async Task<ExchangeBinding> DeclareEventsExchange(this IChannel channel,
         string exchangeName,
         CancellationToken cancellationToken = default)
     {
-        await channel.ExchangeDeclareAsync(exchangeName, ExchangeType.Fanout,
+        await channel.ExchangeDeclareAsync(exchangeName, ExchangeType.Topic,
             false, true, null,
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
-        return exchangeName;
+        return new(channel, exchangeName);
     }
 
     private static byte[] CreateMessageBody(string json)

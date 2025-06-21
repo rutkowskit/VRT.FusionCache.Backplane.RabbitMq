@@ -28,6 +28,7 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
 
     public async Task Publish(
         BackplaneMessage message,
+        string channelName,
         CancellationToken cancellationToken = default)
     {
         try
@@ -35,9 +36,13 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
             var channel = await GetChannel(cancellationToken)
                 .ConfigureAwait(false);
             var json = JsonSerializer.Serialize(message);
-            var binding = await channel.ConnectToEvents(_options.ExchangeName, cancellationToken)
+
+            var binding = await channel
+                .DeclareEventsExchange(_options.ExchangeName, cancellationToken)
                 .ConfigureAwait(false);
-            await binding.PublishEvent(json, cancellationToken)
+
+            await binding
+                .PublishEvent(json, channelName, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -49,12 +54,14 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
 
     public async Task<IDisposable> SubscribeEvent(
         IMessageHandler<BackplaneMessage> handler,
+        string channelName = "",
         CancellationToken cancellationToken = default)
     {
         try
         {
             var subscriber = new RabbitMqEventSubscriber<BackplaneMessage>(Factory, handler);
             subscriber.WithMessageTypeName(_options.ExchangeName);
+            subscriber.WithChannelName(channelName);
             subscriber.WithLogger(_logger);
             subscriber.SetOnDispose(RemoveDisposedSubscriber);
             _subscribers.TryAdd(subscriber, subscriber);

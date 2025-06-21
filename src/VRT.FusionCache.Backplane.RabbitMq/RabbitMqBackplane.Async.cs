@@ -43,6 +43,6 @@ partial class RabbitMqBackplane
     {
         token.ThrowIfCancellationRequested();
         await EnsureConnectionAsync(token).ConfigureAwait(false);
-        await _busService.Publish(message, token).ConfigureAwait(false);
+        await _busService.Publish(message, _channelName ?? "", token).ConfigureAwait(false);
     }
 }

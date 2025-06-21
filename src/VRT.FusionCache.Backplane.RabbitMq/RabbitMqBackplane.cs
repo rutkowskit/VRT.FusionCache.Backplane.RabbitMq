@@ -6,7 +6,7 @@ namespace VRT.FusionCache.Backplane.RabbitMq;
 internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessageHandler<BackplaneMessage>
 {
     private readonly RabbitMqBackplaneOptions _options;
-    private readonly SemaphoreSlim _subscriptionSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _subscriptionSemaphore = new(1, 1);
     private BackplaneSubscriptionOptions? _subscriptionOptions;
     private string? _channelName;
     private Action<BackplaneMessage>? _incomingMessageHandler;
@@ -17,9 +17,6 @@ internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessag
     private readonly IBusService _busService;
     private IDisposable? _subscriber;
     private readonly ILogger? _logger;
-
-    //private Action<BackplaneConnectionInfo>? _connectHandler;
-    //private Func<BackplaneConnectionInfo, ValueTask>? _connectHandlerAsync;
 
     /// <summary>
     /// Initializes a new instance of the RabbitMqBackplane class.
@@ -60,9 +57,11 @@ internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessag
     private async Task EnsureSubscriber()
     {
         await _subscriptionSemaphore.LockedAsync(
-            async () => _subscriber = await _busService.SubscribeEvent(this),
+            async () => _subscriber = await _busService
+                .SubscribeEvent(this, _channelName ?? "#")
+                .ConfigureAwait(false),
             () => _subscriber is null,
-            CancellationToken.None);
+            CancellationToken.None).ConfigureAwait(false);
     }
 
     private void Disconnect()
