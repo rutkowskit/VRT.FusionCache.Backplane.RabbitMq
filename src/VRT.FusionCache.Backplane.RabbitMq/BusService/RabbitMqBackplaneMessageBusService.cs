@@ -9,7 +9,7 @@ internal sealed class RabbitMqBackplaneMessageBusService : BaseRabbitMqClient, I
     private readonly RabbitMqBackplaneOptions _options;
 
     public RabbitMqBackplaneMessageBusService(
-        ConnectionFactory connectionFactory,
+        IConnectionFactory connectionFactory,
         ILogger<RabbitMqBackplaneMessageBusService> logger,
         IOptions<RabbitMqBackplaneOptions> options)
         : base(connectionFactory)

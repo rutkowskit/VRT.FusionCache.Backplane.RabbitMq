@@ -18,7 +18,10 @@ public static class DependencyInjection
     public static IServiceCollection AddRabbitMqBackplane(this IServiceCollection services,
         Action<RabbitMqBackplaneOptions>? setupOptionsAction = null)
     {
-        ArgumentNullException.ThrowIfNull(services, nameof(services));
+        if (services is null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
         services.AddOptions();
 
         if (setupOptionsAction is not null)
@@ -39,7 +42,10 @@ public static class DependencyInjection
 	/// <returns>The <see cref="IFusionCacheBuilder"/> so that additional calls can be chained.</returns>
 	public static IFusionCacheBuilder WithRabbitMqBackplane(this IFusionCacheBuilder builder, Action<RabbitMqBackplaneOptions>? setupOptionsAction = null)
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
 
         return builder
             .WithBackplane(sp =>
@@ -59,14 +65,14 @@ public static class DependencyInjection
     private static IServiceCollection AddRabbitMqBusService(this IServiceCollection services, Action<RabbitMqBackplaneOptions.RabbitMqOptions>? setupOptionsAction = null)
     {
         services.TryAddSingleton(CreateConnectionFactory);
-        services.AddSingleton<IBusService, RabbitMqBackplaneMessageBusService>();
-        services.AddSingleton<IBusSubscriberService>(p => p.GetRequiredService<IBusService>());
-        services.AddSingleton<IBusPublisherService>(p => p.GetRequiredService<IBusService>());
-        services.AddSingleton<IBusEventSubscriberService>(p => p.GetRequiredService<IBusService>());
+        services.TryAddSingleton<IBusService, RabbitMqBackplaneMessageBusService>();
+        services.TryAddSingleton<IBusSubscriberService>(p => p.GetRequiredService<IBusService>());
+        services.TryAddSingleton<IBusPublisherService>(p => p.GetRequiredService<IBusService>());
+        services.TryAddSingleton<IBusEventSubscriberService>(p => p.GetRequiredService<IBusService>());
         return services;
     }
 
-    private static ConnectionFactory CreateConnectionFactory(IServiceProvider provider)
+    private static IConnectionFactory CreateConnectionFactory(IServiceProvider provider)
     {
         var options = provider.GetService<IOptions<RabbitMqBackplaneOptions>>()?.Value.RabbitMq
             ?? new();

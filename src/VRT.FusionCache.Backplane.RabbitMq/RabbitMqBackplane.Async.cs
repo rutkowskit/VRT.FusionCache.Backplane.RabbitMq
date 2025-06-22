@@ -4,6 +4,7 @@ namespace VRT.FusionCache.Backplane.RabbitMq;
 
 partial class RabbitMqBackplane
 {
+    private static readonly ValueTask CompletedValueTask = new(Task.CompletedTask);
     private async ValueTask EnsureConnectionAsync(CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
@@ -11,7 +12,7 @@ partial class RabbitMqBackplane
         {
             return;
         }
-        await EnsureSubscriber();
+        await EnsureSubscriber(token);
         var tmp = _connectHandlerAsync;
         if (tmp is not null)
         {
@@ -35,7 +36,7 @@ partial class RabbitMqBackplane
     public ValueTask UnsubscribeAsync()
     {
         Unsubscribe();
-        return ValueTask.CompletedTask;
+        return CompletedValueTask;
     }
 
     /// <inheritdoc/>

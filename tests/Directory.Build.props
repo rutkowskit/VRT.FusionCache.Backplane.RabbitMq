@@ -1,17 +1,17 @@
 <Project>
 	<PropertyGroup>
-		<ParentDirectoryBuildPropsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..\'))</ParentDirectoryBuildPropsPath>		
+		<ParentDirectoryBuildPropsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..\'))</ParentDirectoryBuildPropsPath>
 	</PropertyGroup>
 
 	<ImportGroup>
 		<Import Project="$(ParentDirectoryBuildPropsPath)"
 				Condition="$(ParentDirectoryBuildPropsPath) != ''"/>
 	</ImportGroup>
-	
+
 	<ItemGroup Condition="$(AssemblyName.Contains('.Tests.'))">
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 		<PackageReference Include="Shouldly" />
 		<PackageReference Include="xunit.v3" />
-		<PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />				
-	</ItemGroup>	
+		<PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />
+	</ItemGroup>
 </Project>

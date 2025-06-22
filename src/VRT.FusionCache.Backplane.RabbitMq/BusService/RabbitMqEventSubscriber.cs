@@ -1,6 +1,6 @@
 ﻿namespace VRT.FusionCache.Backplane.RabbitMq.BusService;
 internal sealed class RabbitMqEventSubscriber<T>(
-    ConnectionFactory factory,
+    IConnectionFactory factory,
     IMessageHandler<T> handler)
     : BaseRabbitMqSubscriber<T>(factory, handler)
 {

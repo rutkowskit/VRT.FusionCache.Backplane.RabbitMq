@@ -14,10 +14,13 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
     private Action<IDisposable> _onDispose = (_) => { };
 
     protected BaseRabbitMqSubscriber(
-        ConnectionFactory factory,
+        IConnectionFactory factory,
         IMessageHandler<T> handler) : base(factory)
     {
-        ArgumentNullException.ThrowIfNull(handler);
+        if (handler is null)
+        {
+            throw new ArgumentNullException(nameof(handler), "RabbitMQ message handler must not be null");
+        }
         _handler = handler;
     }
     public string MessageTypeName { get; private set; } = typeof(T).FullName!;
@@ -29,7 +32,7 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
         {
             return;
         }
-        MessageTypeName = messageTypeName;
+        MessageTypeName = messageTypeName ?? typeof(T).FullName!;
     }
     public void WithChannelName(string? channelName)
     {
@@ -43,7 +46,10 @@ internal abstract class BaseRabbitMqSubscriber<T> : BaseRabbitMqClient, IRabbitM
 
     public void SetOnDispose(Action<IDisposable> onDispose)
     {
-        ArgumentNullException.ThrowIfNull(onDispose);
+        if (onDispose is null)
+        {
+            throw new ArgumentNullException(nameof(onDispose), "RabbitMQ message handler must not be null");
+        }
         _onDispose = onDispose;
     }
     public async Task Subscribe(CancellationToken cancellationToken = default)

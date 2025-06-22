@@ -1,14 +1,14 @@
 ﻿using VRT.FusionCache.Backplane.RabbitMq.Extensions;
 
 namespace VRT.FusionCache.Backplane.RabbitMq.BusService.Abstractions;
-internal abstract class BaseRabbitMqClient(ConnectionFactory factory) : IDisposable, IAsyncDisposable
+internal abstract class BaseRabbitMqClient(IConnectionFactory factory) : IDisposable, IAsyncDisposable
 {
     private bool _disposedValue;
     private readonly SemaphoreSlim _connectionLock = new(initialCount: 1, maxCount: 1);
 
     protected IChannel? Channel { get; private set; }
     protected IConnection? Connection { get; private set; }
-    protected ConnectionFactory Factory { get; } = factory;
+    protected IConnectionFactory Factory { get; } = factory;
 
     protected virtual void Dispose(bool disposing)
     {

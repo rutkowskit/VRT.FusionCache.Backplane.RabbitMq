@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
@@ -12,6 +17,6 @@
     <Project Path="src/VRT.FusionCache.Backplane.RabbitMq/VRT.FusionCache.Backplane.RabbitMq.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="VRT.FusionCache.Backplane.RabbitMq.Tests.Integration/VRT.FusionCache.Backplane.RabbitMq.Tests.Integration.csproj" Id="511eec52-f54b-49b9-917c-2226e46fbb98" />
+    <Project Path="tests/VRT.FusionCache.Backplane.RabbitMq.Tests.Integration/VRT.FusionCache.Backplane.RabbitMq.Tests.Integration.csproj" Id="511eec52-f54b-49b9-917c-2226e46fbb98" />
   </Folder>
 </Solution>

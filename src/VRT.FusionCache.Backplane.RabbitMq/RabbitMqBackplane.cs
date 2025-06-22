@@ -29,9 +29,9 @@ internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessag
         IBusService busService,
         ILogger<RabbitMqBackplane>? logger = null)
     {
-        ArgumentNullException.ThrowIfNull(busService, nameof(busService));
-        ArgumentNullException.ThrowIfNull(optionsAccessor, nameof(optionsAccessor));
-        ArgumentNullException.ThrowIfNull(optionsAccessor.Value, nameof(optionsAccessor.Value));
+        if (busService is null) throw new ArgumentNullException(nameof(busService));
+        if (optionsAccessor is null) throw new ArgumentNullException(nameof(optionsAccessor));
+        if (optionsAccessor.Value is null) throw new ArgumentNullException(nameof(optionsAccessor.Value));
 
         _options = optionsAccessor.Value;
         _logger = logger;
@@ -54,14 +54,14 @@ internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessag
         await tmp(message).ConfigureAwait(false);
     }
 
-    private async Task EnsureSubscriber()
+    private async Task EnsureSubscriber(CancellationToken ct = default)
     {
         await _subscriptionSemaphore.LockedAsync(
             async () => _subscriber = await _busService
-                .SubscribeEvent(this, _channelName ?? "#")
+                .SubscribeEvent(this, _channelName ?? "#", ct)
                 .ConfigureAwait(false),
             () => _subscriber is null,
-            CancellationToken.None).ConfigureAwait(false);
+            ct).ConfigureAwait(false);
     }
 
     private void Disconnect()
@@ -98,7 +98,7 @@ internal sealed partial class RabbitMqBackplane : IFusionCacheBackplane, IMessag
         _connectHandlerAsync = _subscriptionOptions.ConnectHandlerAsync;
     }
 
-    private void Validate(BackplaneSubscriptionOptions subscriptionOptions)
+    private static void Validate(BackplaneSubscriptionOptions subscriptionOptions)
     {
         if (subscriptionOptions is null)
             throw new ArgumentNullException(nameof(subscriptionOptions));

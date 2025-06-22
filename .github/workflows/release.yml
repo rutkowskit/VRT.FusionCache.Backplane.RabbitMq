@@ -1,0 +1,57 @@
+name: .NET Build and Publish
+
+on:
+  push:
+    tags: ["v*.*.*"]
+permissions: read-all
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+jobs:  
+  build:
+    runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3.13-management
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672:5672  # AMQP port
+          - 15672:15672  # Management UI port (optional, for debugging)
+        options: >-
+          --health-cmd "rabbitmqctl status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        filter: tree:0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x' # Specify the .NET version you're using
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release
+
+    - name: Run tests
+      run: dotnet test -c Release --no-build --verbosity normal
+
+    - name: Pack
+      run: dotnet pack -c Release --no-build --no-restore
+
+    - name: Publish to NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}  
+        NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}  
+      if: env.NUGET_SOURCE != '' || env.NUGET_API_KEY != ''        
+      run: dotnet nuget push '**/bin/Release/*.nupkg' --api-key ${{ env.NUGET_API_KEY }} --source ${{ env.NUGET_SOURCE }} --skip-duplicate
+      

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>    
-    <OutputType>Exe</OutputType>
-    <RootNamespace>VRT.FusionCache.Backplane.RabbitMq.Tests.Integration</RootNamespace>
-            	  
-    <!--
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>VRT.FusionCache.Backplane.RabbitMq.Tests.Integration</RootNamespace>
+	</PropertyGroup>
+		<!--
     To enable the Microsoft Testing Platform 'dotnet test' experience, add property:
       <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
 
@@ -13,33 +13,33 @@
     For more information on Microsoft Testing Platform support in xUnit.net, please visit:
       https://xunit.net/docs/getting-started/v3/microsoft-testing-platform
     -->
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="appsettings.json" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+		<ItemGroup>
+			<None Remove="appsettings.json" />
+		</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Meziantou.Extensions.Logging.Xunit.v3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
-  </ItemGroup>
+		<ItemGroup>
+			<Content Include="appsettings.json">
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</Content>
+			<Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+		</ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+		<ItemGroup>
+			<PackageReference Include="Meziantou.Extensions.Logging.Xunit.v3" />
+			<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+			<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+			<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+			<PackageReference Include="Microsoft.Extensions.Logging" />
+			<PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
+		</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\VRT.FusionCache.Backplane.RabbitMq\VRT.FusionCache.Backplane.RabbitMq.csproj" />
-  </ItemGroup>
+		<ItemGroup>
+			<Using Include="Xunit" />
+		</ItemGroup>
 
-</Project>
+		<ItemGroup>
+			<ProjectReference Include="..\..\src\VRT.FusionCache.Backplane.RabbitMq\VRT.FusionCache.Backplane.RabbitMq.csproj" />
+		</ItemGroup>
+
+	</Project>
