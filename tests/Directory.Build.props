@@ -1,6 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<ParentDirectoryBuildPropsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..\'))</ParentDirectoryBuildPropsPath>
+		<IsPackable>false</IsPackable>		
 	</PropertyGroup>
 
 	<ImportGroup>
